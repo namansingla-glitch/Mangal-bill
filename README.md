@@ -33,6 +33,10 @@ itself the next time it is opened with internet.
 The sheet is connected (the link is in `src/settings.json`). To change a rate, edit the Google
 Sheet and change the date in its `#Rates updated` row; nothing in this repository needs to change.
 
+When the same size is sold in two makes, give each its own column with the make after the size,
+for example `3/4x1/2 Heavy` and `3/4x1/2 Light` (Ashirvad brass MTA is set up this way). The app
+shows them as two size buttons and prints the make on the bill.
+
 On a phone with no internet, or before it has ever reached the sheet, the app uses the rates in
 `src/data/rates.csv` that were built into it.
 A sheet with a mistake is never used: the phones keep the last good rates and show the row and

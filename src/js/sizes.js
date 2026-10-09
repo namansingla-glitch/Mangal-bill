@@ -36,8 +36,22 @@ function parsePart(raw) {
   return { key, label };
 }
 
+function parseParts(text) {
+  const parts = text.split(/\s*x\s*/).map(parsePart);
+  if (!parts.length || !parts.every(Boolean)) return null;
+  return { key: parts.map((p) => p.key).join('x'), label: parts.map((p) => p.label).join(' × ') };
+}
+
+// Words after a size that are a unit, not a kind: "20 mm" stays "20 mm".
+const UNITS = new Set(['mm', 'cm', 'm', 'mtr', 'mtrs', 'meter', 'meters', 'metre', 'metres', 'ft', 'feet', 'foot', 'kg', 'kgs', 'g', 'gm', 'gms', 'l', 'ltr', 'litre', 'liter', 'pc', 'pcs', 'no', 'nos']);
+const kindWord = (w) => (w.length <= 2 ? w.toUpperCase() : w[0].toUpperCase() + w.slice(1));
+
 /**
  * normaliseSize('1 1/4 x 3/4') -> { key: '1 1/4x3/4', label: '1¼" × ¾"' }
+ *
+ * A size can carry a kind after it, for the same size sold in two makes:
+ * normaliseSize('3/4x1/2 Heavy') -> { key: '3/4x1/2 heavy', label: '¾" × ½" Heavy', base: '¾" × ½"', kind: 'Heavy' }
+ *
  * Anything it does not recognise is kept exactly as typed.
  */
 export function normaliseSize(raw) {
@@ -49,9 +63,16 @@ export function normaliseSize(raw) {
     .replace(/\b(inch(es)?|in)\b\.?/g, '')
     .replace(/×|\*|\bby\b/g, 'x')
     .trim();
-  const parts = cleaned.split(/\s*x\s*/).map(parsePart);
-  if (parts.length && parts.every(Boolean)) {
-    return { key: parts.map((p) => p.key).join('x'), label: parts.map((p) => p.label).join(' × ') };
+  const plain = parseParts(cleaned);
+  if (plain) return plain;
+  const m = /^([^a-wyz]*?[\d¼½¾])\s*[-–(\[]?\s*([a-z][a-z ]*?)\s*[)\]]?$/.exec(cleaned);
+  if (m) {
+    const size = parseParts(m[1].trim());
+    const words = m[2].split(/\s+/).filter(Boolean);
+    if (size && words.length && words.length <= 3 && !words.some((w) => UNITS.has(w))) {
+      const kind = words.map(kindWord).join(' ');
+      return { key: `${size.key} ${kind.toLowerCase()}`, label: `${size.label} ${kind}`, base: size.label, kind };
+    }
   }
   return { key: text.toLowerCase().replace(/\s+/g, ' '), label: text };
 }

@@ -106,6 +106,39 @@ test('sizes', () => {
   assert.equal(normaliseSize('  '), null);
 });
 
+test('sizes: the same size in two makes (heavy and light)', () => {
+  const heavy = { key: '3/4x1/2 heavy', label: '¾" × ½" Heavy', base: '¾" × ½"', kind: 'Heavy' };
+  for (const raw of ['3/4x1/2 Heavy', '3/4 x 1/2 heavy', '¾"×½" HEAVY', '3/4x1/2 (Heavy)', '3/4x1/2 - Heavy', '3/4x1/2Heavy']) assert.deepEqual(normaliseSize(raw), heavy, raw);
+  assert.deepEqual(normaliseSize('3/4x1/2 Light'), { key: '3/4x1/2 light', label: '¾" × ½" Light', base: '¾" × ½"', kind: 'Light' });
+  assert.deepEqual(normaliseSize('1 H'), { key: '1 h', label: '1" H', base: '1"', kind: 'H' });
+  assert.deepEqual(normaliseSize('1 1/4 Extra Heavy'), { key: '1 1/4 extra heavy', label: '1¼" Extra Heavy', base: '1¼"', kind: 'Extra Heavy' });
+  // a different key from the plain size, so both can be in one row of the sheet
+  assert.notEqual(normaliseSize('3/4x1/2 Heavy').key, normaliseSize('3/4x1/2').key);
+  assert.notEqual(normaliseSize('3/4x1/2 Heavy').key, normaliseSize('3/4x1/2 Light').key);
+  // units and unknown text are still kept exactly as typed
+  for (const raw of ['20 mm', '3 mtr', '6 ft', 'Heavy', 'Heavy 3/4', '1 2 3 Heavy and more words here']) assert.deepEqual(normaliseSize(raw), { key: raw.toLowerCase(), label: raw }, raw);
+});
+
+test('catalog and bill: Ashirvad brass MTA ¾" × ½" comes in Heavy and Light', () => {
+  const r = parseCatalog(fs.readFileSync(new URL('../../src/data/rates.csv', import.meta.url), 'utf8'));
+  assert.equal(r.ok, true, r.errors.join(' | '));
+  const mta = findItem(r.catalog, 'ashirvad', 'brass', 'mta').item;
+  assert.deepEqual(mta.sizes.map((s) => [s.label, s.rate]), [['¾"', 36500], ['1"', 68500], ['1¼"', 127600], ['1" × ¾"', 41300], ['1" × ½"', 41300], ['¾" × ½" Heavy', 28300], ['¾" × ½" Light', 21000]]);
+  assert.deepEqual(mta.sizes.filter((s) => s.kind).map((s) => [s.base, s.kind]), [['¾" × ½"', 'Heavy'], ['¾" × ½"', 'Light']]);
+  // no other item got the new sizes
+  for (const b of r.catalog.brands) for (const t of b.types) for (const it of t.items) if (it !== mta) assert.ok(!it.sizes.some((s) => s.kind), `${b.name} ${t.name} ${it.name}`);
+  // heavy and light are separate lines on the bill, each at its own rate, sharing the brass discount
+  const bill = newBill();
+  const line = (s, qty) => addLine(bill, { brandId: 'ashirvad', brandName: 'Ashirvad', typeId: 'brass', typeName: 'Brass', itemId: 'mta', itemName: 'MTA', sizeKey: s.key, sizeLabel: s.label, rate: s.rate }, qty);
+  setDiscount(bill, 'ashirvad', 'brass', 2000);
+  line(mta.sizes[5], 3);
+  line(mta.sizes[6], 4);
+  line(mta.sizes[5], 2);
+  const t = computeTotals(bill, 1800);
+  assert.deepEqual(t.brands[0].lines.map((l) => [l.name, l.qty, l.net]), [['MTA (Brass) ¾" × ½" Heavy', 5, 113200], ['MTA (Brass) ¾" × ½" Light', 4, 67200]]);
+  assert.equal(t.total, 180400);
+});
+
 test('csv reader', () => {
   assert.deepEqual(parseCsv('a,b\r\n"c,1","d ""q"""\n\n e ,'), [['a', 'b'], ['c,1', 'd "q"'], [''], [' e ', '']]);
   assert.deepEqual(parseCsv('﻿x,y'), [['x', 'y']]);
@@ -153,7 +186,7 @@ test('catalog: the format Google Sheets publishes reads the same as the built-in
   const bundled = fs.readFileSync(new URL('../../src/data/rates.csv', import.meta.url), 'utf8');
   const google = bundled.split('\n').filter((l) => l !== '').map((l) => {
     const c = l.split(',');
-    if (c[0].startsWith('#')) { while (c.length < 11) c.push(''); return c.join(','); }
+    if (c[0].startsWith('#')) { while (c.length < 13) c.push(''); return c.join(','); }
     if (c[0] === 'Brand') return l;
     return c.map((v, i) => (i >= 3 && v !== '' && v !== '?' ? Number(v).toFixed(2) : v)).join(',');
   }).join('\r\n');

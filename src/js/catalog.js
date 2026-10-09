@@ -189,7 +189,9 @@ export function parseCatalog(csvText) {
         continue;
       }
       seen.add(id);
-      place().sizes.push({ key: r.size.key, label: r.size.label, rate: paise });
+      const entry = { key: r.size.key, label: r.size.label, rate: paise };
+      if (r.size.kind) Object.assign(entry, { base: r.size.base, kind: r.size.kind }); // "¾" × ½" Heavy": shown on two lines
+      place().sizes.push(entry);
       if (!pending) rateCount++;
     }
   });

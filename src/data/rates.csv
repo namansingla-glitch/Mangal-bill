@@ -3,40 +3,40 @@
 #Phone,9876299358
 #GST percent,18
 #Rates updated,6 Oct 2026
-Brand,Type,Item,3/4,1,1 1/4,1x3/4,1 1/4x3/4,1 1/4x1,3/4x1/2,1x1/2
-Ashirvad,Pipe,Pipe SDR 11,522,808,1382,,,,,
-Ashirvad,Plain,Elbow,32,62,140,128,140,187,,
-Ashirvad,Plain,Tee,52,78,177,143,275,255,,
-Ashirvad,Plain,Socket,28,44,90,63,124,128,,
-Ashirvad,Plain,Union,155,185,300,,,,,
-Ashirvad,Plain,End Cap,25,39,80,,,,,
-Ashirvad,Plain,Ball Valve,265,494,775,,,,,
-Ashirvad,Plain,Over Step Bend,?,?,365,,,,,
-Ashirvad,Plain,Elbow 45°,47,83,172,,,,,
-Ashirvad,Plain,Tanki Nipple,95,146,246,,,,,
-Ashirvad,Plain,MTA,39,58,103,,,,,
-Ashirvad,Plain,FTA,51,75,199,,,,,
-Ashirvad,Plain,C Bend,91,146,267,,,,,
-Ashirvad,Plain,Bush,,,,39,64,61,,
-Ashirvad,Brass,Elbow,220,653,?,354,,,139,214
-Ashirvad,Brass,Tee,?,?,?,?,,,?,?
-Ashirvad,Brass,MTA,365,685,1276,413,,,?,413
-Ashirvad,Brass,FTA,371,806,1426,232,,,148,192
-Supreme,Pipe,Pipe SDR 11,?,658,1008,,,,,
-Supreme,Plain,Elbow,21.30,42.30,88.60,56.80,86,?,,
-Supreme,Plain,Tee,34.90,54.80,113.20,73.60,153.10,144.20,,
-Supreme,Plain,Socket,16.90,28.70,54.60,?,70.60,81.70,,
-Supreme,Plain,Union,?,149,201,,,,,
-Supreme,Plain,End Cap,15.40,23.20,48.20,,,,,
-Supreme,Plain,Ball Valve,?,355.10,671.70,,,,,
-Supreme,Plain,Over Step Bend,108.60,170.40,?,,,,,
-Supreme,Plain,Elbow 45°,30.20,52.40,109.40,,,,,
-Supreme,Plain,Tanki Nipple,68.70,122.60,162,,,,,
-Supreme,Plain,MTA,?,?,?,,,,,
-Supreme,Plain,FTA,33.70,48.50,123.30,,,,,
-Supreme,Plain,C Bend,43.80,58.40,116.90,,,,,
-Supreme,Plain,Bush,,,,22.90,38.10,31.50,,
-Supreme,Brass,Elbow,111.90,286,?,175.20,,,84.40,139.40
-Supreme,Brass,Tee,137.80,272.70,501.80,249.20,,,92.90,152.10
-Supreme,Brass,MTA,221.90,352.90,?,295.90,,,142.60,254.80
-Supreme,Brass,FTA,225.30,359.60,741.60,137.80,,,90.10,?
+Brand,Type,Item,3/4,1,1 1/4,1x3/4,1 1/4x3/4,1 1/4x1,3/4x1/2,1x1/2,3/4x1/2 Heavy,3/4x1/2 Light
+Ashirvad,Pipe,Pipe SDR 11,522,808,1382,,,,,,,
+Ashirvad,Plain,Elbow,32,62,140,128,140,187,,,,
+Ashirvad,Plain,Tee,52,78,177,143,275,255,,,,
+Ashirvad,Plain,Socket,28,44,90,63,124,128,,,,
+Ashirvad,Plain,Union,155,185,300,,,,,,,
+Ashirvad,Plain,End Cap,25,39,80,,,,,,,
+Ashirvad,Plain,Ball Valve,265,494,775,,,,,,,
+Ashirvad,Plain,Over Step Bend,?,?,365,,,,,,,
+Ashirvad,Plain,Elbow 45°,47,83,172,,,,,,,
+Ashirvad,Plain,Tanki Nipple,95,146,246,,,,,,,
+Ashirvad,Plain,MTA,39,58,103,,,,,,,
+Ashirvad,Plain,FTA,51,75,199,,,,,,,
+Ashirvad,Plain,C Bend,91,146,267,,,,,,,
+Ashirvad,Plain,Bush,,,,39,64,61,,,,
+Ashirvad,Brass,Elbow,220,653,?,354,,,139,214,,
+Ashirvad,Brass,Tee,?,?,?,?,,,?,?,,
+Ashirvad,Brass,MTA,365,685,1276,413,,,,413,283,210
+Ashirvad,Brass,FTA,371,806,1426,232,,,148,192,,
+Supreme,Pipe,Pipe SDR 11,?,658,1008,,,,,,,
+Supreme,Plain,Elbow,21.30,42.30,88.60,56.80,86,?,,,,
+Supreme,Plain,Tee,34.90,54.80,113.20,73.60,153.10,144.20,,,,
+Supreme,Plain,Socket,16.90,28.70,54.60,?,70.60,81.70,,,,
+Supreme,Plain,Union,?,149,201,,,,,,,
+Supreme,Plain,End Cap,15.40,23.20,48.20,,,,,,,
+Supreme,Plain,Ball Valve,?,355.10,671.70,,,,,,,
+Supreme,Plain,Over Step Bend,108.60,170.40,?,,,,,,,
+Supreme,Plain,Elbow 45°,30.20,52.40,109.40,,,,,,,
+Supreme,Plain,Tanki Nipple,68.70,122.60,162,,,,,,,
+Supreme,Plain,MTA,?,?,?,,,,,,,
+Supreme,Plain,FTA,33.70,48.50,123.30,,,,,,,
+Supreme,Plain,C Bend,43.80,58.40,116.90,,,,,,,
+Supreme,Plain,Bush,,,,22.90,38.10,31.50,,,,
+Supreme,Brass,Elbow,111.90,286,?,175.20,,,84.40,139.40,,
+Supreme,Brass,Tee,137.80,272.70,501.80,249.20,,,92.90,152.10,,
+Supreme,Brass,MTA,221.90,352.90,?,295.90,,,142.60,254.80,,
+Supreme,Brass,FTA,225.30,359.60,741.60,137.80,,,90.10,?,,

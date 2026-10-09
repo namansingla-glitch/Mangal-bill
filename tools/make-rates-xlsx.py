@@ -23,7 +23,6 @@ doubt = {
     ("Ashirvad", "Plain", "Over Step Bend", "1"): "Overwritten on your sheet. It looks like 265. Please type the correct rate.",
     ("Ashirvad", "Brass", "Elbow", "1 1/4"): "Not written on your sheet. Type the rate, or empty this box if you do not sell this size.",
     ("Ashirvad", "Brass", "Tee", "1 1/4"): "Not written on your sheet. Type the rate, or empty this box if you do not sell this size.",
-    ("Ashirvad", "Brass", "MTA", "3/4x1/2"): "Your sheet has two rates here: H 283 and L 210. Which one should the app use? (If both are sold, tell me and I will add them as two items.)",
     ("Supreme", "Pipe", "Pipe SDR 11", "3/4"): 'It looks like 219.33, which seems low next to 658 for 1". Please type the correct rate.',
     ("Supreme", "Plain", "Socket", "1x3/4"): "Overwritten on your sheet. It looks like 36.90. Please type the correct rate.",
     ("Supreme", "Plain", "Ball Valve", "3/4"): "Smudged on your sheet. It looks like 220.10. Please type the correct rate.",
@@ -96,8 +95,8 @@ assert used == set(doubt), set(doubt) - used
 ws.column_dimensions["A"].width = 14
 ws.column_dimensions["B"].width = 10
 ws.column_dimensions["C"].width = 20
-for i in range(len(sizes)):
-    ws.column_dimensions[get_column_letter(4 + i)].width = 11
+for i, size in enumerate(sizes):
+    ws.column_dimensions[get_column_letter(4 + i)].width = max(11, len(size) + 3)
 
 how = wb.create_sheet("How to use")
 lines = [
@@ -116,6 +115,7 @@ lines = [
     ("New item: add a row with Brand, Type and Item, then the rates. Example row:   Supreme | Plain | Reducer | 45.50 | 60 | 95", None),
     ("Remove an item: delete its row. Remove one size of an item: empty that box.", None),
     ("New size: type it as a new column heading after the last one, for example 1 1/2 or 2x1. Type an apostrophe first ('1 1/2) so it is not turned into a date.", None),
+    ("Same size in two makes (heavy and light): give each its own column, with the make after the size, for example 3/4x1/2 Heavy and 3/4x1/2 Light. The app shows them as two size buttons.", None),
     ("New brand: just use the new brand name in column A. It appears in the app as a new brand button.", None),
     ("", None),
     ("Rules the app checks", "head"),

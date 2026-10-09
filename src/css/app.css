@@ -138,6 +138,13 @@ button:focus-visible, input:focus-visible { outline: 3px solid #1D4ED8; outline-
 .size.off { background: var(--soft); border-style: dashed; color: var(--muted); }
 .size.off .size-rate { font-size: 0.8125rem; font-weight: 800; color: var(--danger); }
 .size-label { font-size: 1.25rem; font-weight: 800; white-space: nowrap; }
+.size-kind { max-width: 100%; font-size: 0.875rem; font-weight: 800; line-height: 1.1; letter-spacing: 0.03em; text-transform: uppercase; text-align: center; overflow-wrap: anywhere; }
+/* more than six sizes: four across where the phone is wide enough, so the keypad stays on screen */
+.sizes.many { grid-template-columns: repeat(auto-fill, minmax(max(4.75rem, 22%), 1fr)); gap: 6px; }
+.sizes.many .size-label { font-size: 1.0625rem; line-height: 1.2; }
+.sizes.many .size-kind { font-size: 0.8125rem; }
+.sizes.many .size-rate { font-size: 0.875rem; line-height: 1.2; }
+.sizes.many .size.off .size-rate { font-size: 0.75rem; }
 .size-rate { font-size: 0.9375rem; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
 .size.on .size-rate { color: #FFFFFF; }
 .fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }

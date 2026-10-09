@@ -408,6 +408,12 @@ function keypad(v, allowDot) {
   return h('div', { class: 'keypad' }, ['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((d) => key(d, d)), key('.', '.', 'key-soft', 'Decimal point'), key('0', '0'), key(icon('erase', 28, 2.2), 'back', 'key-soft', 'Delete last digit'));
 }
 
+// A size with a kind ("¾" × ½" Heavy") shows the kind on its own line so the button stays readable.
+function sizeName(s) {
+  if (!s.kind) return h('span', { class: 'size-label' }, s.label);
+  return [h('span', { class: 'size-label' }, s.base), h('span', { class: 'size-kind' }, s.kind)];
+}
+
 function itemSheet(v) {
   const found = findItem(S.catalog, v.brandId, v.typeId, v.itemId);
   if (!found && !v.line) {
@@ -458,14 +464,14 @@ function itemSheet(v) {
     ),
     h(
       'div',
-      { class: 'sizes' },
+      { class: `sizes${sizes.length > 6 ? ' many' : ''}` },
       sizes.map((s) =>
         s.rate === null
-          ? h('button', { class: 'size off', disabled: true }, h('span', { class: 'size-label' }, s.label), h('span', { class: 'size-rate' }, 'No rate yet'))
+          ? h('button', { class: 'size off', 'data-size': s.label, disabled: true }, sizeName(s), h('span', { class: 'size-rate' }, 'No rate yet'))
           : h(
               'button',
-              { class: `size${s.key === v.sizeKey ? ' on' : ''}`, 'aria-pressed': s.key === v.sizeKey ? 'true' : 'false', onclick: () => { v.sizeKey = s.key; renderSheetOnly(); } },
-              h('span', { class: 'size-label' }, s.label),
+              { class: `size${s.key === v.sizeKey ? ' on' : ''}`, 'data-size': s.label, 'aria-pressed': s.key === v.sizeKey ? 'true' : 'false', onclick: () => { v.sizeKey = s.key; renderSheetOnly(); } },
+              sizeName(s),
               h('span', { class: 'size-rate' }, rupees(s.rate)),
             ),
       ),

@@ -56,7 +56,7 @@ async function open({ width = 390, height = 844, init, offlineReady = false } = 
 const brandBtn = (page, name) => page.locator('.brand-btn', { hasText: new RegExp(`^${esc(name)}$`) });
 const typeBtn = (page, name) => page.locator('.type-btn', { hasText: new RegExp(`^${esc(name)}$`) });
 const tile = (page, name) => page.locator('.tile').filter({ has: page.locator('.tile-name', { hasText: new RegExp(`^${esc(name)}$`) }) });
-const sizeBtn = (page, label) => page.locator('.size').filter({ has: page.locator('.size-label', { hasText: new RegExp(`^${esc(label)}$`) }) });
+const sizeBtn = (page, label) => page.locator(`.size[data-size="${label.replace(/"/g, '\\"')}"]`);
 const key = (page, ch) => page.locator('.keypad .key').nth('123456789.0<'.indexOf(ch));
 async function keys(page, s) {
   for (const ch of String(s)) await key(page, ch).click();
@@ -505,6 +505,75 @@ test('if the phone refuses to store anything, the app still makes bills', async 
   await ctx.close();
 });
 
+test('the same size in two makes: Ashirvad brass MTA ¾" × ½" Heavy and Light', async () => {
+  const shareStub = () => {
+    window.__shared = [];
+    navigator.canShare = () => true;
+    navigator.share = async (data) => {
+      const f = data.files[0];
+      const buf = new Uint8Array(await f.arrayBuffer());
+      let bin = '';
+      for (let i = 0; i < buf.length; i += 8192) bin += String.fromCharCode.apply(null, buf.subarray(i, i + 8192));
+      window.__shared.push({ name: f.name, type: f.type, b64: btoa(bin) });
+    };
+  };
+  const { ctx, page, errors } = await open({ init: shareStub });
+  await typeBtn(page, 'Brass').click();
+  await tile(page, 'MTA').click();
+  // seven sizes; Heavy and Light are two separate buttons, each with its own rate
+  assert.deepEqual(
+    await page.locator('.size').evaluateAll((els) => els.map((e) => [e.dataset.size, e.querySelector('.size-label').textContent, e.querySelector('.size-kind')?.textContent ?? '', e.querySelector('.size-rate').textContent])),
+    [['¾"', '¾"', '', '₹365.00'], ['1"', '1"', '', '₹685.00'], ['1¼"', '1¼"', '', '₹1,276.00'], ['1" × ¾"', '1" × ¾"', '', '₹413.00'], ['1" × ½"', '1" × ½"', '', '₹413.00'], ['¾" × ½" Heavy', '¾" × ½"', 'Heavy', '₹283.00'], ['¾" × ½" Light', '¾" × ½"', 'Light', '₹210.00']],
+  );
+  await sizeBtn(page, '¾" × ½" Heavy').click();
+  assert.equal(await sizeBtn(page, '¾" × ½" Heavy').getAttribute('aria-pressed'), 'true');
+  assert.equal(await sizeBtn(page, '¾" × ½" Light').getAttribute('aria-pressed'), 'false', 'choosing Heavy does not choose Light');
+  await keys(page, '3');
+  await page.locator('.field[data-field=disc]').click();
+  await keys(page, '20');
+  assert.equal(await text(page.locator('.price')), '₹679.20'); // 3 x 283 less 20%
+  await page.locator('[data-testid=add]').click();
+  await sheetClosed(page);
+  await addItem(page, { item: 'MTA', size: '¾" × ½" Light', qty: 4 });
+  assert.equal(await text(page.locator('.billbar-total')), '₹1,351.20'); // 679.20 + 4 x 210 less 20%
+  await addItem(page, { item: 'MTA', size: '¾" × ½" Heavy', qty: 2 }); // joins the Heavy line, not the Light one
+  await addItem(page, { item: 'MTA', size: '1" × ½"', qty: 1 });
+  assert.equal(await text(page.locator('.billbar-count')), '3');
+  assert.equal(await text(page.locator('.billbar-total')), '₹2,134.40');
+
+  await page.getByRole('button', { name: 'View bill' }).click();
+  assert.deepEqual(await page.locator('.line-name').allTextContents(), ['MTA (Brass) ¾" × ½" Heavy', 'MTA (Brass) ¾" × ½" Light', 'MTA (Brass) 1" × ½"']);
+  assert.deepEqual(await page.locator('.line-amount').allTextContents(), ['₹1,132.00', '₹672.00', '₹330.40']);
+  // edit the Light line: it opens on Light, and can be changed to a different quantity
+  await page.locator('.line').nth(1).click();
+  assert.equal(await sizeBtn(page, '¾" × ½" Light').getAttribute('aria-pressed'), 'true');
+  assert.equal(await sizeBtn(page, '¾" × ½" Heavy').getAttribute('aria-pressed'), 'false');
+  await keys(page, '10');
+  await page.locator('[data-testid=add]').click();
+  await sheetClosed(page);
+  assert.deepEqual(await page.locator('.line-amount').allTextContents(), ['₹1,132.00', '₹1,680.00', '₹330.40']);
+  assert.equal(await text(page.locator('.foot-total')), '₹3,142.40');
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, 'no sideways scrolling');
+  await page.screenshot({ path: path.join(OUT, 'mta-bill.png') });
+
+  await page.getByRole('button', { name: 'Finish bill' }).click();
+  await page.locator('.choice').nth(1).click();
+  await page.waitForSelector('.paper');
+  const paper = await page.locator('.paper').innerText();
+  for (const want of ['MTA (Brass) ¾" × ½" Heavy × 5', '1,132.00', 'MTA (Brass) ¾" × ½" Light × 10', '1,680.00', 'MTA (Brass) 1" × ½" × 1', '330.40', '3,142.40', '₹3,142']) assert.ok(paper.includes(want), `receipt shows ${want}`);
+  await page.getByRole('button', { name: 'Share picture' }).click();
+  await page.waitForFunction(() => window.__shared.length === 1, null, { timeout: 30000 });
+  fs.writeFileSync(path.join(OUT, 'mta-estimate.png'), Buffer.from((await page.evaluate(() => window.__shared))[0].b64, 'base64'));
+  // saved bills keep the make
+  await page.reload();
+  await page.waitForSelector('.tile');
+  await page.getByRole('button', { name: 'Old bills' }).click();
+  await page.locator('.old-row').click();
+  assert.ok((await page.locator('.paper').innerText()).includes('MTA (Brass) ¾" × ½" Heavy × 5'));
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
 const SIZES = [
   { name: 'small old phone', width: 320, height: 568 },
   { name: 'common budget phone', width: 360, height: 640 },
@@ -520,7 +589,7 @@ for (const size of SIZES) {
         const out = [];
         const vw = window.innerWidth;
         if (document.documentElement.scrollWidth > vw + 1) out.push(`page scrolls sideways (${document.documentElement.scrollWidth} > ${vw})`);
-        for (const el of document.querySelectorAll('button, .price, .foot-total, .billbar-total, .line-amount, .brand-sub, .sheet-name, .field-value, .choice-amount, .paper-line, .paper-grand, .tile-name, .size-label, .size-rate, .old-amount')) {
+        for (const el of document.querySelectorAll('button, .price, .foot-total, .billbar-total, .line-amount, .brand-sub, .sheet-name, .field-value, .choice-amount, .paper-line, .paper-grand, .tile-name, .size-label, .size-kind, .size-rate, .old-amount')) {
           const r = el.getBoundingClientRect();
           if (r.width === 0 || r.height === 0) continue;
           if (r.left < -1 || r.right > vw + 1) out.push(`off the side: ${el.className} "${el.textContent.trim().slice(0, 24)}" ${Math.round(r.left)}..${Math.round(r.right)}`);
@@ -560,6 +629,26 @@ for (const size of SIZES) {
       await page.locator('[data-testid=add]').scrollIntoViewIfNeeded();
     }
     await page.locator('[data-testid=add]').click();
+    await sheetClosed(page);
+    // an item with more than six sizes, two of them the same size in two makes
+    await brandBtn(page, 'Ashirvad').click();
+    await typeBtn(page, 'Brass').click();
+    await tile(page, 'MTA').click();
+    assert.equal(await page.locator('.size').count(), 7);
+    await sizeBtn(page, '¾" × ½" Heavy').click();
+    await keys(page, '99999');
+    await page.locator('.field[data-field=disc]').click();
+    await keys(page, '12.25');
+    await check('sheet-many-sizes');
+    if (size.height >= 640 && !size.fontScale) {
+      const fits = await page.evaluate(() => {
+        const s = document.querySelector('.sheet');
+        const b = document.querySelector('[data-testid=add]').getBoundingClientRect();
+        return s.scrollHeight <= s.clientHeight + 1 && b.bottom <= window.innerHeight;
+      });
+      assert.equal(fits, true, 'a sheet with seven sizes still shows the keypad and Add button without scrolling');
+    }
+    await page.goBack();
     await sheetClosed(page);
     await addItem(page, { brand: 'Ashirvad', type: 'Pipe', item: 'Pipe SDR 11', size: '1¼"', qty: 99999, disc: '0.05' });
     await check('home-big-total');
