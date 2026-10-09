@@ -16,15 +16,22 @@ export const CONFIG = {
   spareBrandColors: ['#0F766E', '#7C3AED', '#B91C1C', '#3F6212'],
 
   // Pictures that exist in img/. An item uses "<type>-<item>" first (brass-elbow), then its
-  // own name, then an alias from the list below. No match shows the item's initials.
+  // own name, then an alias from the list below, then the same again for the start of its
+  // name. No match shows the item's initials.
   pictures: ['elbow', 'tee', 'socket', 'union', 'end-cap', 'ball-valve', 'step-bend', 'elbow-45', 'tanki-nipple', 'mta', 'fta', 'bush', 'c-bend', 'pipe', 'brass-elbow', 'brass-tee', 'brass-mta', 'brass-fta'],
   pictureAliases: { 'over-step-bend': 'step-bend', 'tanki-nipple-plain': 'tanki-nipple', 'tank-nipple': 'tanki-nipple', 'pipe-sdr-11': 'pipe', 'elbow-45-degree': 'elbow-45', endcap: 'end-cap', 'ball-valve-plain': 'ball-valve', 'reducing-bush': 'bush', 'reducer-bush': 'bush' },
 };
 
 export function pictureFor(typeId, itemId) {
   const has = (n) => CONFIG.pictures.includes(n);
-  const alias = CONFIG.pictureAliases[itemId];
-  for (const name of [`${typeId}-${itemId}`, alias && `${typeId}-${alias}`, itemId, alias]) if (name && has(name)) return name;
+  // The full name first. Then the name without its last words, so an item typed as
+  // "MTA(pvc)" or "Elbow Heavy" in the rate sheet still gets the MTA or Elbow picture.
+  const words = itemId.split('-');
+  for (let n = words.length; n >= 1; n--) {
+    const id = words.slice(0, n).join('-');
+    const alias = CONFIG.pictureAliases[id];
+    for (const name of [`${typeId}-${id}`, alias && `${typeId}-${alias}`, id, alias]) if (name && has(name)) return name;
+  }
   if (itemId.startsWith('pipe')) return 'pipe';
   return null;
 }

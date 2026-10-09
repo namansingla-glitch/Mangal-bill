@@ -9,7 +9,7 @@ import { newBill, addLine, removeLine, restoreLine, setDiscount, discountFor, co
 import { receiptPng, receiptPdf, shareFile, fileName, dateText, timeText } from './receipt.js';
 
 const MAX_SAVED_BILLS = 1000;
-const RATES_RECHECK_MS = 10 * 60 * 1000;
+const RATES_RECHECK_MS = 60 * 1000; // coming back to the app after a minute looks at the rate sheet again
 
 const S = {
   catalog: null,

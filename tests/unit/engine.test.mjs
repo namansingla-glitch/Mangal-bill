@@ -4,6 +4,8 @@ import fs from 'node:fs';
 import { parseRupees, parsePercent, percentText, amountText, rupees, rupeesWhole, lineAmounts, gstAmount, roundToRupee } from '../../src/js/money.js';
 import { normaliseSize } from '../../src/js/sizes.js';
 import { parseCsv, parseCatalog, findItem } from '../../src/js/catalog.js';
+import { pictureFor } from '../../src/js/config.js';
+import { slug } from '../../src/js/catalog.js';
 import { newBill, addLine, removeLine, restoreLine, updateLine, setDiscount, discountFor, computeTotals, finalFigures, lineName } from '../../src/js/bill.js';
 
 test('parseRupees reads plain amounts exactly', () => {
@@ -309,4 +311,22 @@ test('bill: same item and size adds to the quantity; edit, remove and undo', () 
   const empty = computeTotals(newBill(1), 1800);
   assert.equal(empty.total, 0);
   assert.equal(empty.withGst.grand, 0);
+});
+
+test('pictures: every item in the built-in rates has one, and names with an addition use the base picture', () => {
+  const r = parseCatalog(fs.readFileSync(new URL('../../src/data/rates.csv', import.meta.url), 'utf8'));
+  for (const b of r.catalog.brands) for (const t of b.types) for (const it of t.items) assert.ok(pictureFor(t.id, it.id), `${b.name} ${t.name} ${it.name}`);
+  const pic = (type, name) => pictureFor(slug(type), slug(name));
+  assert.equal(pic('Plain', 'MTA(pvc)'), 'mta');
+  assert.equal(pic('Plain', 'MTA (PVC)'), 'mta');
+  assert.equal(pic('Brass', 'MTA Heavy'), 'brass-mta');
+  assert.equal(pic('Brass', 'Elbow'), 'brass-elbow');
+  assert.equal(pic('Plain', 'Elbow 45°'), 'elbow-45');
+  assert.equal(pic('Plain', 'Elbow 90'), 'elbow');
+  assert.equal(pic('Plain', 'Ball Valve Long Handle'), 'ball-valve');
+  assert.equal(pic('Plain', 'Over Step Bend'), 'step-bend');
+  assert.equal(pic('Plain', 'Tanki Nipple Plain'), 'tanki-nipple');
+  assert.equal(pic('Pipe', 'Pipe SDR 11'), 'pipe');
+  assert.equal(pic('Plain', 'Long Radius Bend'), null, 'an unknown item shows its initials');
+  assert.equal(pic('Plain', 'Clamp'), null);
 });

@@ -1,6 +1,6 @@
 // Keeps a copy of the app on the phone so it opens and works with no internet.
 // VERSION and FILES are filled in by tools/build.mjs.
-const VERSION = "mangal-bill-12847d896b1b";
+const VERSION = "mangal-bill-07f55b4c0deb";
 const FILES = ["./","app.css","app.js","fonts/OFL-LICENSE.txt","fonts/mukta-latin-400-normal.woff2","fonts/mukta-latin-600-normal.woff2","fonts/mukta-latin-800-normal.woff2","fonts/mukta-latin-ext-400-normal.woff2","fonts/mukta-latin-ext-600-normal.woff2","fonts/mukta-latin-ext-800-normal.woff2","icons/apple-touch-icon.png","icons/icon-192.png","icons/icon-512.png","img/ball-valve.webp","img/brass-elbow.webp","img/brass-fta.webp","img/brass-mta.webp","img/brass-tee.webp","img/bush.webp","img/c-bend.webp","img/elbow-45.webp","img/elbow.webp","img/end-cap.webp","img/fta.webp","img/mta.webp","img/pipe.webp","img/socket.webp","img/step-bend.webp","img/tanki-nipple.webp","img/tee.webp","img/union.webp","index.html","manifest.webmanifest"];
 
 self.addEventListener('install', (event) => {
