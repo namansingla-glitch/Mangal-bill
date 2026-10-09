@@ -1,0 +1,14 @@
+{
+  "name": "mangal-bill",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:unit": "node --test tests/unit/engine.test.mjs",
+    "test:cross": "node tests/unit/crosscheck.mjs gen > /tmp/mb-cases.json && python3 -I tests/unit/crosscheck.py /tmp/mb-cases.json > /tmp/mb-expected.json && node tests/unit/crosscheck.mjs check /tmp/mb-cases.json /tmp/mb-expected.json"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "playwright": "^1.56.0"
+  }
+}
