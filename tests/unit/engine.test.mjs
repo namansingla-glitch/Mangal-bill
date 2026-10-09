@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { parseRupees, parsePercent, percentText, amountText, rupees, rupeesWhole, lineAmounts, gstAmount, roundToRupee } from '../../src/js/money.js';
 import { normaliseSize } from '../../src/js/sizes.js';
 import { parseCsv, parseCatalog, findItem } from '../../src/js/catalog.js';
@@ -144,6 +145,25 @@ test('catalog: a good sheet', () => {
   assert.equal(pending.rateCount, 1);
   assert.deepEqual(pending.catalog.brands[0].types[0].items[0].sizes, [{ key: '3/4', label: '¾"', rate: null }, { key: '1', label: '1"', rate: null }, { key: '1 1/4', label: '1¼"', rate: 36500 }], '? keeps the size, with no rate');
   assert.equal(parseCatalog('Brand,Type,Item,3/4\nA,Plain,Elbow,??\n').ok, false);
+});
+
+test('catalog: the format Google Sheets publishes reads the same as the built-in rates', () => {
+  // Google sends CRLF line ends, numbers as 522.00, setting rows padded with empty cells and
+  // no final line end. The catalogue must come out identical to the built-in one.
+  const bundled = fs.readFileSync(new URL('../../src/data/rates.csv', import.meta.url), 'utf8');
+  const google = bundled.split('\n').filter((l) => l !== '').map((l) => {
+    const c = l.split(',');
+    if (c[0].startsWith('#')) { while (c.length < 11) c.push(''); return c.join(','); }
+    if (c[0] === 'Brand') return l;
+    return c.map((v, i) => (i >= 3 && v !== '' && v !== '?' ? Number(v).toFixed(2) : v)).join(',');
+  }).join('\r\n');
+  assert.ok(google.includes('\r\n') && google.includes(',522.00,') && !google.endsWith('\n'));
+  const a = parseCatalog(bundled);
+  const b = parseCatalog(google);
+  assert.equal(b.ok, true, b.errors.join(' | '));
+  assert.equal(b.rateCount, a.rateCount);
+  assert.deepEqual(b.catalog, a.catalog);
+  assert.deepEqual(b.settings, a.settings);
 });
 
 test('catalog: long layout works too', () => {

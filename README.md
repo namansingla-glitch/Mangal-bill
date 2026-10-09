@@ -24,13 +24,17 @@ itself the next time it is opened with internet.
 
 1. Upload `Mangal-rates.xlsx` to Google Drive and open it with Google Sheets.
 2. File > Share > Publish to web. Choose the **Rates** tab and **Comma-separated values (.csv)**.
-3. Put the link in `dist/settings.json`:
+3. Put the link in `src/settings.json`, run `node tools/build.mjs`, and commit:
 
    ```json
    { "ratesUrl": "https://docs.google.com/spreadsheets/d/e/.../pub?gid=0&single=true&output=csv" }
    ```
 
-Until a link is set, the app uses the rates in `src/data/rates.csv` that were built into it.
+The sheet is connected (the link is in `src/settings.json`). To change a rate, edit the Google
+Sheet and change the date in its `#Rates updated` row; nothing in this repository needs to change.
+
+On a phone with no internet, or before it has ever reached the sheet, the app uses the rates in
+`src/data/rates.csv` that were built into it.
 A sheet with a mistake is never used: the phones keep the last good rates and show the row and
 column of the mistake under "Rates updated".
 

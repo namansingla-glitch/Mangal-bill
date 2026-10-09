@@ -24,7 +24,12 @@ copyDir('icons');
 fs.copyFileSync(path.join(src, 'index.html'), path.join(dist, 'index.html'));
 fs.copyFileSync(path.join(src, 'css/app.css'), path.join(dist, 'app.css'));
 fs.copyFileSync(path.join(src, 'manifest.webmanifest'), path.join(dist, 'manifest.webmanifest'));
-fs.writeFileSync(path.join(dist, 'settings.json'), JSON.stringify({ ratesUrl: '' }, null, 2) + '\n');
+// settings.json holds the link to the shared rate sheet. Phones read it fresh every time they
+// have internet, so the link can be changed without the phones re-installing anything.
+const settings = JSON.parse(fs.readFileSync(path.join(src, 'settings.json'), 'utf8'));
+if (typeof settings.ratesUrl !== 'string') throw new Error('src/settings.json needs a "ratesUrl" (use "" for none)');
+if (settings.ratesUrl && !/^https:\/\//.test(settings.ratesUrl)) throw new Error('ratesUrl in src/settings.json must start with https://');
+fs.writeFileSync(path.join(dist, 'settings.json'), JSON.stringify({ ratesUrl: settings.ratesUrl.trim() }, null, 2) + '\n');
 
 // service worker: every file except itself and settings.json is kept on the phone
 const files = [];
